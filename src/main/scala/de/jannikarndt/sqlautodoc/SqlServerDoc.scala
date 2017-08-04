@@ -48,7 +48,7 @@ class SqlServerDoc(val db: SQLServerProfile.backend.DatabaseDef) {
             colType <- sysTypes.filterNot(_.name === "sysname") if colType.xtype === column.xtype
         } yield (column.colid, column.id, column.name, colType.name, column.length, column.isnullable, column.default)
 
-        Await.result(db.run(columnsQuery.result), 10 seconds)
+        Await.result(db.run(columnsQuery.result), 10 seconds).sortBy(_._1)
     }
 
     private def queryProperties(majorId: Rep[Int], minorId: Rep[Int]): Seq[(String, String)] = {
