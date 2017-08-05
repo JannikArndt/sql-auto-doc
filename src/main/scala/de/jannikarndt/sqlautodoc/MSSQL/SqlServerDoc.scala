@@ -1,6 +1,8 @@
-package de.jannikarndt.sqlautodoc
+package de.jannikarndt.sqlautodoc.MSSQL
 
-import de.jannikarndt.sqlautodoc.MSSQL._
+import com.typesafe.scalalogging.Logger
+import de.jannikarndt.sqlautodoc.{ColumnInfo, Options, TableInfo}
+import slick.jdbc
 import slick.jdbc.SQLServerProfile
 import slick.jdbc.SQLServerProfile.api._
 
@@ -9,6 +11,32 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
+object SqlServerDoc {
+
+    val logger = Logger(this.getClass)
+
+    def QuerySystemTables(options: Options): Seq[TableInfo] = {
+
+        logger.debug(s"Connecting to SQL Server ${options.connection.url} with user ${options.connection.user}")
+
+        var db: jdbc.SQLServerProfile.backend.DatabaseDef = null
+
+        try {
+            db = Database.forURL(
+                options.connection.url,
+                driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+                user = options.connection.user,
+                password = options.connection.password)
+
+            val doc = new SqlServerDoc(db)
+
+            Await.result(doc.getTableInfo, options.timeout seconds)
+        } finally {
+            db.close
+        }
+    }
+}
+
 class SqlServerDoc(val db: SQLServerProfile.backend.DatabaseDef) {
     private lazy val schemas = TableQuery[Schemas]
     private lazy val sysobjects = TableQuery[SysObjects]
@@ -16,7 +44,6 @@ class SqlServerDoc(val db: SQLServerProfile.backend.DatabaseDef) {
     private lazy val sysColumns = TableQuery[SysColumns]
     private lazy val sysTypes = TableQuery[SysTypes]
 
-    case class TableQueryResult(schema: Rep[String], name: Rep[String], id: Rep[Int], propName: Rep[String], prop: Rep[String])
 
     def getTableInfo: Future[Seq[TableInfo]] = {
         queryTables().flatMap(userTables =>

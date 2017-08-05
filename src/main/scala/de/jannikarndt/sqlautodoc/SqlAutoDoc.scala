@@ -1,27 +1,29 @@
 package de.jannikarndt.sqlautodoc
 
-import slick.jdbc.SQLServerProfile.api._
+import com.typesafe.scalalogging.Logger
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
+/**
+  * SQL Auto Doc reads the url, user and password of a database from args, sqlautodoc.conf or environment vars,
+  * queries the database's system tables and creates a Markdown-String from that structure.
+  */
 object SqlAutoDoc {
+    val logger = Logger(this.getClass)
+
+    /**
+      * Create Markdown documentation
+      *
+      * Usage: SqlAutoDoc -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=README.md -timeout=20
+      */
     def main(args: Array[String]): Unit = {
 
-        val db = Database.forURL("jdbc:sqlserver://localhost:1401",
-            driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver", user = "SA", password = "Bla12345")
+        val options = Configuration.FromArgsConfAndEnv(args)
 
-        try {
+        val tableInfos = TableInfo.For(options)
 
-            val doc = new SqlServerDoc(db)
+        val markdown = Markdown.From(tableInfos)
 
-            val tableInfos: Seq[TableInfo] = Await.result(doc.getTableInfo, 20 seconds)
-
-            print(tableInfos.map(_.toMarkdown).mkString(System.lineSeparator()))
-
-        } finally db.close()
+        logger.info(markdown)
     }
 }
-
-
