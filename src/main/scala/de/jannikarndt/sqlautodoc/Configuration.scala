@@ -14,12 +14,15 @@ object Configuration {
       * @return
       */
     def FromArgsConfAndEnv(args: Array[String]): Options = {
-        val usage = "Usage: SqlAutoDoc -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=README.md -timeout=20"
+        val usage = "Usage: java -jar SqlAutoDoc.jar -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=README.md -timeout=20"
 
-        if (args.length == 0) println(usage)
+        if (args.length == 0) {
+            println(usage)
+            sys.exit(0)
+        }
 
         try {
-            val inputArgs = args.toList.map(_.split('=')).map(arg => arg(0) -> arg(1)).toMap
+            val inputArgs = args.toList.map(_.split('=')).map(arg => arg(0).stripPrefix("-") -> arg(1)).toMap
 
             val connection = Connection(
                 url = GetValue(inputArgs, "url"),

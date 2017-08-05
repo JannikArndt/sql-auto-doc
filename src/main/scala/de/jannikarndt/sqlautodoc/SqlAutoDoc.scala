@@ -9,7 +9,7 @@ object SqlAutoDoc {
     /**
       * Create Markdown documentation
       *
-      * Usage: SqlAutoDoc -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=README.md -timeout=20
+      * Usage: java -jar SqlAutoDoc.jar -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=README.md -timeout=20
       */
     def main(args: Array[String]): Unit = {
 

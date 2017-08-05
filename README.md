@@ -3,7 +3,7 @@
 Generate Markdown-documentation from your database. Example:
 
 ```bash
-$ SqlAutoDoc -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=README.md -timeout=20
+$ java -jar SqlAutoDoc.jar -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=README.md -timeout=20
 ```
 
 ![](screenshot.png)
@@ -13,7 +13,7 @@ Configuration can be given
 
 - as arguments: 
     ```bash
-    $ SqlAutoDoc -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=README.md -timeout=20
+    $ java -jar SqlAutoDoc.jar -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=README.md -timeout=20
     ```
 - as config-file `sqlautodoc.conf`: 
     ```hocon

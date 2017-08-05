@@ -88,8 +88,24 @@
         </dependency>
     </dependencies>
 
+    <scm>
+        <connection>scm:git:https://github.com/JannikArndt/sql-auto-doc.git</connection>
+        <tag>HEAD</tag>
+    </scm>
+    
     <build>
         <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
+        
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
+        
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -107,6 +123,31 @@
             </plugins>
         </pluginManagement>
         <plugins>
+            <plugin>
+                <!-- Create JAR -->
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <finalName>SqlAutoDoc</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>de.jannikarndt.sqlautodoc.SqlAutoDoc</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+            </plugin>
             <plugin>
                 <!-- https://mvnrepository.com/artifact/net.alchim31.maven/scala-maven-plugin -->
                 <groupId>net.alchim31.maven</groupId>
