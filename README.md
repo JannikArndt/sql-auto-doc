@@ -2,7 +2,17 @@
 
 Generate Markdown-documentation from your database. Example:
 
+```bash
+$ SqlAutoDoc -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=README.md -timeout=20
+```
+
 ![](screenshot.png)
+
+### Usage
+Configuration can be given
+
+- as arguments: `SqlAutoDoc -url=jdbc:sqlserver://localhost:1401 ...`
+- as config-file `sqlautodoc.conf`: 
 
 ### Supported Databases
 

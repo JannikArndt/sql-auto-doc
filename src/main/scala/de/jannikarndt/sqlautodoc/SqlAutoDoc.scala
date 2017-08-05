@@ -1,15 +1,10 @@
 package de.jannikarndt.sqlautodoc
 
-import com.typesafe.scalalogging.Logger
-
-import scala.language.postfixOps
-
 /**
   * SQL Auto Doc reads the url, user and password of a database from args, sqlautodoc.conf or environment vars,
-  * queries the database's system tables and creates a Markdown-String from that structure.
+  * queries the database's system tables and creates a Markdown-file from that structure.
   */
 object SqlAutoDoc {
-    val logger = Logger(this.getClass)
 
     /**
       * Create Markdown documentation
@@ -24,6 +19,6 @@ object SqlAutoDoc {
 
         val markdown = Markdown.From(tableInfos)
 
-        logger.info(markdown)
+        File.Create(options, markdown)
     }
 }
