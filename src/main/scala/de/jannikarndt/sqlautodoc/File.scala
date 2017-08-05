@@ -1,7 +1,7 @@
 package de.jannikarndt.sqlautodoc
 
 import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Path, Paths, StandardOpenOption}
+import java.nio.file.{Files, Paths, StandardOpenOption}
 
 import com.typesafe.scalalogging.Logger
 
@@ -10,19 +10,15 @@ object File {
 
     /**
       * Creates a file from the given string
-      * @param options Options containing the output-filename
+      *
+      * @param path     Filepath
       * @param markdown The content of the file
       */
-    def Create(options: Options, markdown: String): Unit = {
-        if (!options.outputFile.isEmpty)
-        {
-            logger.debug(s"Writing to file ${options.outputFile}")
-            Files.write(Paths.get(options.outputFile), markdown.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE)
-            logger.debug(s"Done.")
-        }
-        else{
-            logger.debug("No output file given, writing to console instead.")
-            println(markdown)
-        }
+    def Create(path: String, markdown: String): Unit = {
+        logger.debug(s"Writing to file $path")
+        val filepath = Paths.get(path)
+        Files.createDirectories(filepath.getParent)
+        Files.write(filepath, markdown.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE)
+        logger.debug(s"Done.")
     }
 }

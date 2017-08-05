@@ -34,6 +34,18 @@ Configuration can be given
 
 If multiple options are given, config-file overrides environment vars and arguments override config-file.
 
+Excepted arguments are
+
+- `url`: A [database url](http://slick.lightbend.com/doc/3.2.1/database.html#using-a-database-url) in the form `vendor://user:password@host:port/db`
+- `user`: The database user, must be able to access system tables
+- `password`: Password for the database user
+- `output`: Filename for markdown output, e.g. `tables.md`
+- `timeout`: How long the application waits for the database. Measured in seconds.
+- `format`: Takes arguments 
+    - `OneFile`: one file for everything
+    - `OneFilePerSchema`: one file per schema
+    - `OneFilePerTable`: one file per table, one folder per schema
+
 ### Supported Databases
 
 - MSSQL (SQL Server)

@@ -17,8 +17,6 @@ object SqlAutoDoc {
 
         val tableInfos = TableInfo.For(options)
 
-        val markdown = Markdown.From(tableInfos)
-
-        File.Create(options, markdown)
+        Markdown.From(tableInfos, options)
     }
 }

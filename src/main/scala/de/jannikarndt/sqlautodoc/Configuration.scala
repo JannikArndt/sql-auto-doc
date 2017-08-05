@@ -33,8 +33,14 @@ object Configuration {
             val options = Options(
                 connection = connection,
                 dbType = GetDbTypeFromUrl(connection.url),
-                outputFile = GetValue(inputArgs, "output", ""),
-                timeout = GetValue(inputArgs, "timeout", "20").toInt
+                outputFile = GetValue(inputArgs, "output", "tables.md"),
+                timeout = GetValue(inputArgs, "timeout", "20").toInt,
+                format = GetValue(inputArgs, "format", "OneFile") match {
+                    case "OneFile" => OutputFormat.OneFile
+                    case "OneFilePerSchema" => OutputFormat.OneFilePerSchema
+                    case "OneFilePerTable" => OutputFormat.OneFilePerTable
+                    case wrong => throw WrongFormatException(s"The given format $wrong is not supported. Valid options are 'OneFile', 'OneFilePerSchema' and 'OneFilePerTable'.")
+                }
             )
 
             logger.debug(s"Database Type is set to ${options.dbType}.")
@@ -51,7 +57,7 @@ object Configuration {
     private def GetDbTypeFromUrl(url: String): SupportedDBs.SupportedDB = {
         url match {
             case str if str.contains("sqlserver") => SupportedDBs.MSSQL
-            case _ => throw DatabaseNotSupported("Sorry, this database is not supported yet.")
+            case _ => throw DatabaseNotSupportedException("Sorry, this database is not supported yet.")
         }
     }
 
@@ -72,13 +78,17 @@ object Configuration {
 
 case class Connection(url: String, user: String, password: String)
 
-case class Options(connection: Connection, dbType: SupportedDBs.SupportedDB, outputFile: String, timeout: Int)
+case class Options(connection: Connection, dbType: SupportedDBs.SupportedDB, outputFile: String, timeout: Int, format: OutputFormat.OutputFormat)
 
 case class MissingArgumentException(private val message: String = "",
                                     private val cause: Throwable = None.orNull)
     extends Exception(message, cause)
 
-case class DatabaseNotSupported(private val message: String = "",
+case class DatabaseNotSupportedException(private val message: String = "",
+                                         private val cause: Throwable = None.orNull)
+    extends Exception(message, cause)
+
+case class WrongFormatException(private val message: String = "",
                                 private val cause: Throwable = None.orNull)
     extends Exception(message, cause)
 
@@ -95,4 +105,17 @@ object SupportedDBs {
     case object MySQL extends SupportedDB
 
     val supportedDBs = Seq(MSSQL)
+}
+
+object OutputFormat {
+
+    sealed trait OutputFormat
+
+    case object OneFile extends OutputFormat
+
+    case object OneFilePerSchema extends OutputFormat
+
+    case object OneFilePerTable extends OutputFormat
+
+    val OutputFormat = Seq(OneFile, OneFilePerSchema, OneFilePerTable)
 }

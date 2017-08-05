@@ -8,11 +8,28 @@ object Markdown {
       * @param tableInfos A list of TableInfo-objects
       * @return
       */
-    def From(tableInfos: Seq[TableInfo]): String = {
-        tableInfos.map(From).mkString(System.lineSeparator())
+    def From(tableInfos: Seq[TableInfo], options: Options): Unit = {
+        options.format match {
+          case OutputFormat.OneFile =>
+              val markdown = tableInfos.map(ToMarkdown).mkString(System.lineSeparator())
+              File.Create(options.outputFile, markdown)
+          case OutputFormat.OneFilePerSchema =>
+              tableInfos.map(_.schema).distinct.foreach { schema =>
+                  val markdown = tableInfos.filter(_.schema == schema).map(ToMarkdown).mkString(System.lineSeparator())
+                  File.Create(s"$schema.md", markdown)
+              }
+          case OutputFormat.OneFilePerTable =>
+              tableInfos.map(_.schema).distinct.foreach { schema =>
+                  tableInfos.filter(_.schema == schema).foreach{table =>
+                      File.Create(s"$schema/${table.name}.md", ToMarkdown(table))
+                  }
+              }
+        }
+
+
     }
 
-    private def From(tableInfo: TableInfo): String = {
+    private def ToMarkdown(tableInfo: TableInfo): String = {
         val _id = math.max(tableInfo.columns.map(_.id.toString.length).max, 4)
         val _name = math.max(tableInfo.columns.map(_.name.length).max, 6)
         val _type = math.max(tableInfo.columns.map(col => col.colType.length + col.length.toString.length + 2).max, 14)
@@ -41,12 +58,12 @@ object Markdown {
             "-".padTo(_comment, "-").mkString
         ).mkString("| ", " | ", " |")
 
-        val columnStrings = tableInfo.columns.map(From(_, _id, _name, _type, _nullable, _default, _example, _comment)).mkString(System.lineSeparator())
+        val columnStrings = tableInfo.columns.map(ToMarkdown(_, _id, _name, _type, _nullable, _default, _example, _comment)).mkString(System.lineSeparator())
 
         Seq(s"# ${tableInfo.schema}.${tableInfo.name}", "", tableInfo.description, "", tableHeader, tableBorder, columnStrings, System.lineSeparator()).mkString(System.lineSeparator())
     }
 
-    private def From(columnInfo: ColumnInfo, _id: Int, _name: Int, _type: Int, _nullable: Int, _default: Int, _example: Int, _comment: Int): String = Seq(
+    private def ToMarkdown(columnInfo: ColumnInfo, _id: Int, _name: Int, _type: Int, _nullable: Int, _default: Int, _example: Int, _comment: Int): String = Seq(
         columnInfo.id.toString.padTo(_id, " ").mkString,
         columnInfo.name.padTo(_name, " ").mkString,
         (columnInfo.colType + "(" + columnInfo.length + ")").padTo(_type, " ").mkString,

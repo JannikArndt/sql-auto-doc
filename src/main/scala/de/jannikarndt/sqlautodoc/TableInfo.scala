@@ -13,7 +13,7 @@ object TableInfo {
     def For(options: Options): Seq[TableInfo] = {
         options.dbType match {
             case SupportedDBs.MSSQL => SqlServerDoc.QuerySystemTables(options)
-            case _ => throw DatabaseNotSupported("Sorry, this database is not supported yet.")
+            case _ => throw DatabaseNotSupportedException("Sorry, this database is not supported yet.")
         }
     }
 }
