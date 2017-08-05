@@ -11,8 +11,28 @@ $ SqlAutoDoc -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -o
 ### Usage
 Configuration can be given
 
-- as arguments: `SqlAutoDoc -url=jdbc:sqlserver://localhost:1401 ...`
+- as arguments: 
+    ```bash
+    $ SqlAutoDoc -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=README.md -timeout=20
+    ```
 - as config-file `sqlautodoc.conf`: 
+    ```hocon
+    "url": "jdbc:sqlserver://localhost:1401"
+    "user": "SA"
+    "password": "Bla12345"
+    "output": "Table.md"
+    "timeout": 20
+    ```
+- as environment variables: 
+    ```bash
+    export SQLAUTODOC_URL=jdbc:sqlserver://localhost:1401
+    export SQLAUTODOC_USER=SA
+    export SQLAUTODOC_PASSWORD=Bla12345
+    export SQLAUTODOC_OUTPUT=Table.md
+    export SQLAUTODOC_TIMEOUT=20
+    ```
+
+If multiple options are given, config-file overrides environment vars and arguments override config-file.
 
 ### Supported Databases
 
