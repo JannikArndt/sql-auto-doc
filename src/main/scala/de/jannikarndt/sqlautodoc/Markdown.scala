@@ -9,19 +9,24 @@ object Markdown {
       * @return
       */
     def From(tableInfos: Seq[TableInfo], options: Options): Unit = {
+        val folder = options.outputFolder.stripPrefix("/").stripSuffix("/") match {
+            case empty if empty.length == 0 => ""
+            case path => path + "/"
+        }
+
         options.format match {
           case OutputFormat.OneFile =>
               val markdown = tableInfos.map(ToMarkdown).mkString(System.lineSeparator())
-              File.Create(options.outputFile, markdown)
+              File.Create(s"$folder${options.outputFile}", markdown)
           case OutputFormat.OneFilePerSchema =>
               tableInfos.map(_.schema).distinct.foreach { schema =>
                   val markdown = tableInfos.filter(_.schema == schema).map(ToMarkdown).mkString(System.lineSeparator())
-                  File.Create(s"$schema.md", markdown)
+                  File.Create(s"$folder/$schema.md", markdown)
               }
           case OutputFormat.OneFilePerTable =>
               tableInfos.map(_.schema).distinct.foreach { schema =>
                   tableInfos.filter(_.schema == schema).foreach{table =>
-                      File.Create(s"$schema/${table.name}.md", ToMarkdown(table))
+                      File.Create(s"$folder/$schema/${table.name}.md", ToMarkdown(table))
                   }
               }
         }

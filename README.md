@@ -40,6 +40,7 @@ Excepted arguments are
 - `user`: The database user, must be able to access system tables
 - `password`: Password for the database user
 - `output`: Filename for markdown output, e.g. `tables.md`
+- `outputFolder`: Folder for markdown output, e.g. `documentation`
 - `timeout`: How long the application waits for the database. Measured in seconds.
 - `format`: Takes arguments 
     - `OneFile`: one file for everything

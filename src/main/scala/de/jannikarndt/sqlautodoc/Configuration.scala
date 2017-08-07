@@ -22,7 +22,7 @@ object Configuration {
         }
 
         try {
-            val inputArgs = args.toList.map(_.split('=')).map(arg => arg(0).stripPrefix("-") -> arg(1)).toMap
+            val inputArgs = args.toList.map(_.split("=", 2)).map(arg => arg(0).stripPrefix("-") -> arg(1)).toMap
 
             val connection = Connection(
                 url = GetValue(inputArgs, "url"),
@@ -34,6 +34,7 @@ object Configuration {
                 connection = connection,
                 dbType = GetDbTypeFromUrl(connection.url),
                 outputFile = GetValue(inputArgs, "output", "tables.md"),
+                outputFolder = GetValue(inputArgs, "outputFolder", ""),
                 timeout = GetValue(inputArgs, "timeout", "20").toInt,
                 format = GetValue(inputArgs, "format", "OneFile") match {
                     case "OneFile" => OutputFormat.OneFile
@@ -78,7 +79,7 @@ object Configuration {
 
 case class Connection(url: String, user: String, password: String)
 
-case class Options(connection: Connection, dbType: SupportedDBs.SupportedDB, outputFile: String, timeout: Int, format: OutputFormat.OutputFormat)
+case class Options(connection: Connection, dbType: SupportedDBs.SupportedDB, outputFile: String, outputFolder: String, timeout: Int, format: OutputFormat.OutputFormat)
 
 case class MissingArgumentException(private val message: String = "",
                                     private val cause: Throwable = None.orNull)
