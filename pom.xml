@@ -13,7 +13,7 @@
         <scala.version.major>2.11</scala.version.major>
         <scala.version.minor>.11</scala.version.minor>
         <scala.compat.version>${scala.version.major}</scala.compat.version>
-        <slick.version>3.2.0</slick.version>
+        <slick.version>3.2.1</slick.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -35,7 +35,7 @@
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>6.2.0.jre8</version>
+            <version>6.2.1.jre8</version>
         </dependency>
 
         <!-- Slick -->

@@ -28,7 +28,8 @@ object SqlServerDoc {
                 driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver",
                 user = options.connection.user,
                 password = options.connection.password,
-                keepAliveConnection = true)
+                keepAliveConnection = true,
+                executor = AsyncExecutor("test1", numThreads=10, queueSize=1000))
 
             val doc = new SqlServerDoc(db)
 
@@ -49,17 +50,30 @@ class SqlServerDoc(val db: SQLServerProfile.backend.DatabaseDef) {
     val logger = Logger(this.getClass)
 
     def getTableInfo: Future[Seq[TableInfo]] = {
-        queryTables().flatMap(userTables =>
-            Future(
-                userTables.map(table =>
-                    TableInfo(table._1, table._2, table._3, table._5,
-                        queryColumns(table._3).map(col =>
-                            MssqlColumnInfo(col._3, col._2, col._4, col._5, col._6, col._7, queryProperties(col._2, col._1))
-                        )
-                    )
-                )
-            )
-        )
+        val tablesFuture: Future[Seq[(String, String, Int, String, String)]] = queryTables()
+
+        tablesFuture.flatMap(getTablesInfo)
+    }
+
+    private def getTablesInfo(tables: Seq[(String, String, Int, String, String)]): Future[Seq[TableInfo]] = {
+        Future.sequence(tables.map(getTableInfo))
+    }
+
+    private def getTableInfo(table: (String, String, Int, String, String)): Future[TableInfo] = {
+        queryColumns(table._3)
+            .flatMap(getColumnsInfo)
+            .map(col => TableInfo(table._1, table._2, table._3, table._5, col))
+    }
+
+    private def getColumnsInfo(cols: Seq[(Int, Int, String, String, Int, Boolean, String)]): Future[Seq[ColumnInfo]] = {
+        Future.sequence(cols.map(getColumnInfos))
+    }
+
+    private def getColumnInfos(col: (Int, Int, String, String, Int, Boolean, String)): Future[ColumnInfo] = {
+        logger.debug(s"Querying property for major id ${col._2} and minor id ${col._1}")
+
+        db.run(getPropertiesQueryCompiled(col._2, col._1).result)
+            .map(props => MssqlColumnInfo(col._3, col._2, col._4, col._5, col._6, col._7, props))
     }
 
     private def queryTables(): Future[Seq[(String, String, Int, String, String)]] = {
@@ -69,23 +83,27 @@ class SqlServerDoc(val db: SQLServerProfile.backend.DatabaseDef) {
             prop <- properties.filter(_.minor_id === 0).filter(_.theclass === 1) if tables.id === prop.major_id
         } yield (schema.name, tables.name, tables.id, prop.name, prop.value.asColumnOf[String])
 
-        db.run(tablesQuery.result)
+        db.run(tablesQuery.result) // .sortBy(_._1)
     }
 
-    private def queryColumns(tableId: Int): Seq[(Int, Int, String, String, Int, Boolean, String)] = {
+
+
+    private def queryColumns(tableId: Int): Future[Seq[(Int, Int, String, String, Int, Boolean, String)]] = {
         logger.debug(s"Querying columns for table id $tableId")
         val columnsQuery = for {
             column <- sysColumns.filter(_.id === tableId)
             colType <- sysTypes.filterNot(_.name === "sysname") if colType.xtype === column.xtype
         } yield (column.colid, column.id, column.name, colType.name, column.length, column.isnullable, column.default)
 
-        Await.result(db.run(columnsQuery.result), 10 seconds).sortBy(_._1)
+        db.run(columnsQuery.result)
     }
 
-    private def queryProperties(majorId: Rep[Int], minorId: Rep[Int]): Seq[(String, String)] = {
-        val propsQuery = properties.filter(_.major_id === majorId).filter(_.minor_id === minorId).filter(_.theclass === 1)
+    private def getPropertiesQuery(majorId: Rep[Int], minorId: Rep[Int]) =
+        properties
+            .filter(_.major_id === majorId)
+            .filter(_.minor_id === minorId)
+            .filter(_.theclass === 1)
             .map(col => (col.name, col.value.asColumnOf[String]))
 
-        Await.result(db.run(propsQuery.result), 10 seconds)
-    }
+    private val getPropertiesQueryCompiled = Compiled(getPropertiesQuery _)
 }
