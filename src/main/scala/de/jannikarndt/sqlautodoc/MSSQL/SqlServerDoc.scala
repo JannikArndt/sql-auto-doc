@@ -2,7 +2,7 @@ package de.jannikarndt.sqlautodoc.MSSQL
 
 import com.typesafe.scalalogging.Logger
 import de.jannikarndt.sqlautodoc.configuration.Options
-import de.jannikarndt.sqlautodoc.model.{ColumnInfo, TableInfo}
+import de.jannikarndt.sqlautodoc.model._
 import slick.jdbc
 import slick.jdbc.SQLServerProfile
 import slick.jdbc.SQLServerProfile.api._
@@ -52,7 +52,7 @@ class SqlServerDoc(val db: SQLServerProfile.backend.DatabaseDef) {
                 userTables.map(table =>
                     TableInfo(table._1, table._2, table._3, table._5,
                         queryColumns(table._3).map(col =>
-                            ColumnInfo(col._3, col._2, col._4, col._5, col._6, col._7, queryProperties(col._2, col._1))
+                            MssqlColumnInfo(col._3, col._2, col._4, col._5, col._6, col._7, queryProperties(col._2, col._1))
                         )
                     )
                 )
