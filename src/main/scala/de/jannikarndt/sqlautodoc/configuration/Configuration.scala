@@ -47,7 +47,9 @@ object Configuration {
 
             logger.debug(s"Database Type is set to ${options.dbType}.")
             logger.debug(s"Output is set to ${options.outputFile}.")
+            logger.debug(s"Folder is set to ${options.outputFolder}.")
             logger.debug(s"Timeout is set to ${options.timeout} seconds.")
+            logger.debug(s"Format is set to ${options.format}.")
 
             options
         }

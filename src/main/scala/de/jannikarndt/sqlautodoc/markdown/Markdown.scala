@@ -24,12 +24,12 @@ object Markdown {
             case OutputFormat.OneFilePerSchema =>
                 tableInfos.map(_.schema).distinct.foreach { schema =>
                     val markdown = tableInfos.filter(_.schema == schema).map(ToMarkdown).mkString(System.lineSeparator())
-                    File.Create(s"$folder/$schema.md", markdown)
+                    File.Create(s"$folder$schema.md", markdown)
                 }
             case OutputFormat.OneFilePerTable =>
                 tableInfos.map(_.schema).distinct.foreach { schema =>
                     tableInfos.filter(_.schema == schema).foreach { table =>
-                        File.Create(s"$folder/$schema/${table.name}.md", ToMarkdown(table))
+                        File.Create(s"$folder$schema/${table.name}.md", ToMarkdown(table))
                     }
                 }
         }

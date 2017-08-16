@@ -27,7 +27,8 @@ object SqlServerDoc {
                 options.connection.url,
                 driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver",
                 user = options.connection.user,
-                password = options.connection.password)
+                password = options.connection.password,
+                keepAliveConnection = true)
 
             val doc = new SqlServerDoc(db)
 
@@ -45,6 +46,7 @@ class SqlServerDoc(val db: SQLServerProfile.backend.DatabaseDef) {
     private lazy val sysColumns = TableQuery[SysColumns]
     private lazy val sysTypes = TableQuery[SysTypes]
 
+    val logger = Logger(this.getClass)
 
     def getTableInfo: Future[Seq[TableInfo]] = {
         queryTables().flatMap(userTables =>
@@ -71,6 +73,7 @@ class SqlServerDoc(val db: SQLServerProfile.backend.DatabaseDef) {
     }
 
     private def queryColumns(tableId: Int): Seq[(Int, Int, String, String, Int, Boolean, String)] = {
+        logger.debug(s"Querying columns for table id $tableId")
         val columnsQuery = for {
             column <- sysColumns.filter(_.id === tableId)
             colType <- sysTypes.filterNot(_.name === "sysname") if colType.xtype === column.xtype
