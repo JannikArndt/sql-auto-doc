@@ -3,7 +3,7 @@
 Generate Markdown-documentation from your database. Example:
 
 ```bash
-$ java -jar SqlAutoDoc.jar -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=README.md -timeout=20
+$ java -jar SqlAutoDoc.jar -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=tables.md -timeout=30 outputFolder=Examples
 ```
 
 ![](screenshot.png)
@@ -13,7 +13,7 @@ Configuration can be given
 
 - as arguments: 
     ```bash
-    $ java -jar SqlAutoDoc.jar -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=README.md -timeout=20
+    $ java -jar SqlAutoDoc.jar -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=tables.md -timeout=20
     ```
 - as config-file `sqlautodoc.conf`: 
     ```hocon
@@ -74,7 +74,7 @@ Then run
 ```bash
 $ mvn clean package
 ...
-$ java -jar ./target/SqlAutoDoc.jar -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=README.md -timeout=20
+$ java -jar ./target/SqlAutoDoc.jar -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=tables.md -timeout=20 -outputFolder=Examples
 ```
 
 ### Aim: Maven- or Flyway-Plugin

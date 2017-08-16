@@ -20,7 +20,7 @@ object File {
         println(filepath)
         if (filepath.toString.contains("/"))
             Files.createDirectories(filepath.getParent)
-        Files.write(filepath, markdown.getBytes(StandardCharsets.UTF_8), StandardOpenOption.TRUNCATE_EXISTING)
+        Files.write(filepath, markdown.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
         logger.debug(s"Done.")
     }
 }
