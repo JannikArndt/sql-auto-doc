@@ -83,7 +83,7 @@ class SqlServerDoc(val db: SQLServerProfile.backend.DatabaseDef) {
         val columnsQuery = for {
             column <- sysColumns.filter(_.id === tableId)
             colType <- sysTypes.filterNot(_.name === "sysname") if colType.xtype === column.xtype
-            prop <- properties.filter(_.minor_id === column.colid).filter(_.theclass === 1).map(p => (p.minor_id, p.name, p.value.asColumnOf[String]))
+            prop <- properties.filter(_.major_id === tableId).filter(_.minor_id === column.colid).filter(_.theclass === 1).map(p => (p.minor_id, p.name, p.value.asColumnOf[String]))
         } yield (column.colid, column.id, column.name, colType.name, column.length, column.isnullable, column.default, prop._2, prop._3)
 
         db.run(columnsQuery.result).map(x => x.map(ColInfo.tupled))
