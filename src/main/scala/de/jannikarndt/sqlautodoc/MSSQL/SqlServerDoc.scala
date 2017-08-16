@@ -64,10 +64,7 @@ class SqlServerDoc(val db: SQLServerProfile.backend.DatabaseDef) {
 
     private def getColumnsInfo(cols: Seq[ColInfo]): Seq[ColumnInfo] = {
         cols.groupBy(_.name).map((colTuple: (String, Seq[ColInfo])) => {
-            println(colTuple)
             val propsForThisCol = colTuple._2.map(c => (c.propName, c.propVal))
-            println(propsForThisCol)
-            println("-")
             val col = colTuple._2.head
             MssqlColumnInfo(col.name, col.colid, col.typeName, col.length, col.nullable, col.default, propsForThisCol)
         }).toSeq.sortBy(_.id)

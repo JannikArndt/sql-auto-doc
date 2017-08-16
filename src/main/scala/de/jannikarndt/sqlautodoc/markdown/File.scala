@@ -18,7 +18,7 @@ object File {
         logger.debug(s"Writing to file $path")
         val filepath = Paths.get(path)
         Files.createDirectories(filepath.getParent)
-        Files.write(filepath, markdown.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE)
+        Files.write(filepath, markdown.getBytes(StandardCharsets.UTF_8), StandardOpenOption.TRUNCATE_EXISTING)
         logger.debug(s"Done.")
     }
 }
