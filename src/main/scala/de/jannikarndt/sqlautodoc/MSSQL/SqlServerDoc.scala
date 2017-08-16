@@ -66,14 +66,15 @@ class SqlServerDoc(val db: SQLServerProfile.backend.DatabaseDef) {
     }
 
     private def getColumnsInfo(cols: Seq[(Int, Int, String, String, Int, Boolean, String)]): Future[Seq[ColumnInfo]] = {
-        Future.sequence(cols.map(getColumnInfos))
-    }
+        val futureProps = db.run(getPropertiesQueryCompiled(cols.head._2).result) // all properties for major id
 
-    private def getColumnInfos(col: (Int, Int, String, String, Int, Boolean, String)): Future[ColumnInfo] = {
-        logger.debug(s"Querying property for major id ${col._2} and minor id ${col._1}")
-
-        db.run(getPropertiesQueryCompiled(col._2, col._1).result)
-            .map(props => MssqlColumnInfo(col._3, col._2, col._4, col._5, col._6, col._7, props))
+        futureProps.map(allProperties =>
+            cols.map(col =>
+            {
+                val propsForThisCol = allProperties.filter(_._1 == col._1).map(x => (x._2, x._3))
+                MssqlColumnInfo(col._3, col._2, col._4, col._5, col._6, col._7, propsForThisCol)
+            })
+        )
     }
 
     private def queryTables(): Future[Seq[(String, String, Int, String, String)]] = {
@@ -83,10 +84,8 @@ class SqlServerDoc(val db: SQLServerProfile.backend.DatabaseDef) {
             prop <- properties.filter(_.minor_id === 0).filter(_.theclass === 1) if tables.id === prop.major_id
         } yield (schema.name, tables.name, tables.id, prop.name, prop.value.asColumnOf[String])
 
-        db.run(tablesQuery.result) // .sortBy(_._1)
+        db.run(tablesQuery.result)
     }
-
-
 
     private def queryColumns(tableId: Int): Future[Seq[(Int, Int, String, String, Int, Boolean, String)]] = {
         logger.debug(s"Querying columns for table id $tableId")
@@ -98,12 +97,11 @@ class SqlServerDoc(val db: SQLServerProfile.backend.DatabaseDef) {
         db.run(columnsQuery.result)
     }
 
-    private def getPropertiesQuery(majorId: Rep[Int], minorId: Rep[Int]) =
+    private def getPropertiesQuery(majorId: Rep[Int]) =
         properties
             .filter(_.major_id === majorId)
-            .filter(_.minor_id === minorId)
             .filter(_.theclass === 1)
-            .map(col => (col.name, col.value.asColumnOf[String]))
+            .map(col => (col.minor_id, col.name, col.value.asColumnOf[String]))
 
     private val getPropertiesQueryCompiled = Compiled(getPropertiesQuery _)
 }
