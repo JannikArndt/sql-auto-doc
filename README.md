@@ -58,12 +58,24 @@ Excepted arguments are
 
 ### MSSQL / SQL Server
 
-1. Run SQL Server in Docker
-
+You need a working [docker](https://www.docker.com) installation and the [`microsoft/mssql-server-linux`](https://hub.docker.com/r/microsoft/mssql-server-linux/) image:
 ```bash
 $ docker pull microsoft/mssql-server-linux
-$ docker run -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=Bla12345' -e 'MSSQL_PID=Developer' --cap-add SYS_PTRACE -p 1401:1433 -d microsoft/mssql-server-linux
 ``` 
+
+To start the container and add an example database, run:
+
+```bash
+$ ./setup_mssql.sh
+``` 
+
+Then run
+
+```bash
+$ mvn clean package
+...
+$ java -jar ./target/SqlAutoDoc.jar -url=jdbc:sqlserver://localhost:1401 -user=SA -password=Bla12345 -output=README.md -timeout=20
+```
 
 ### Aim: Maven- or Flyway-Plugin
 

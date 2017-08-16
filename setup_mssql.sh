@@ -17,38 +17,6 @@ else
     echo -e "\033[0;32mDocker image for 'microsoft/mssql-server-linux' found ($docker_id).\033[0m"
 fi
 
-# Make sure sqlcmd is installed
-if hash sqlcmd 2>/dev/null; then
-    echo -e "\033[0;32msqlcmd found\033[0m"
-else
-    read -n 1 -p "$(tput setaf 3)sqlcmd not found. Install via brew?$(tput sgr0) (y/n) " RESP
-    echo ""
-	if [ "$RESP" = "y" ]; then
-		if hash brew 2>/dev/null; then
-            echo -e "\033[0;32mInstalling sqlcmd\033[0m"
-            brew tap microsoft/mssql-preview https://github.com/Microsoft/homebrew-mssql-preview
-            brew update
-            ACCEPT_EULA=y brew install --without-registration -no-sandbox msodbcsql
-            ACCEPT_EULA=y brew install -no-sandbox mssql-tools
-            odbcinst -j
-            echo "msodbcsql was installed without registration (see https://github.com/Microsoft/homebrew-mssql-release/issues/1#issuecomment-319524606)"
-            echo "Please open the odbcinst.ini and add the following section:"
-            echo "[ODBC Driver 13 for SQL Server]"
-            echo "Description=Microsoft ODBC Driver 13 for SQL Server"
-            echo "Driver=/usr/local/lib/libmsodbcsql.13.dylib"
-            echo "UsageCount=1"
-            echo " "
-            echo "Afterward run this script again."
-            exit 1
-        else
-            echo -e "\033[31mbrew not found. Please install homebrew via /usr/bin/ruby -e '$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)'\033[0m"
-            exit 1
-	    fi
-	else
-        exit 1
-    fi
-fi
-
 echo "Copying script to docker container..."
 
 # Copy sql script to docker container
