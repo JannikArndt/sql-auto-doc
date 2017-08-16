@@ -28,8 +28,7 @@ object SqlServerDoc {
                 driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver",
                 user = options.connection.user,
                 password = options.connection.password,
-                keepAliveConnection = true,
-                executor = AsyncExecutor("test1", numThreads=10, queueSize=1000))
+                executor = AsyncExecutor("test1", numThreads = 10, queueSize = 1000))
 
             val doc = new SqlServerDoc(db)
 
@@ -50,58 +49,50 @@ class SqlServerDoc(val db: SQLServerProfile.backend.DatabaseDef) {
     val logger = Logger(this.getClass)
 
     def getTableInfo: Future[Seq[TableInfo]] = {
-        val tablesFuture: Future[Seq[(String, String, Int, String, String)]] = queryTables()
-
-        tablesFuture.flatMap(getTablesInfo)
+        db.run(tablesQuery.result).map(x => x.map(TabInfo.tupled)).flatMap(getTablesInfo)
     }
 
-    private def getTablesInfo(tables: Seq[(String, String, Int, String, String)]): Future[Seq[TableInfo]] = {
+    private def getTablesInfo(tables: Seq[TabInfo]): Future[Seq[TableInfo]] = {
         Future.sequence(tables.map(getTableInfo))
     }
 
-    private def getTableInfo(table: (String, String, Int, String, String)): Future[TableInfo] = {
-        queryColumns(table._3)
-            .flatMap(getColumnsInfo)
-            .map(col => TableInfo(table._1, table._2, table._3, table._5, col))
+    private def getTableInfo(table: TabInfo): Future[TableInfo] = {
+        queryColumns(table.id)
+            .map(getColumnsInfo)
+            .map(col => TableInfo(table.schema, table.name, table.id, table.propVal, col))
     }
 
-    private def getColumnsInfo(cols: Seq[(Int, Int, String, String, Int, Boolean, String)]): Future[Seq[ColumnInfo]] = {
-        val futureProps = db.run(getPropertiesQueryCompiled(cols.head._2).result) // all properties for major id
-
-        futureProps.map(allProperties =>
-            cols.map(col =>
-            {
-                val propsForThisCol = allProperties.filter(_._1 == col._1).map(x => (x._2, x._3))
-                MssqlColumnInfo(col._3, col._2, col._4, col._5, col._6, col._7, propsForThisCol)
-            })
-        )
+    private def getColumnsInfo(cols: Seq[ColInfo]): Seq[ColumnInfo] = {
+        cols.groupBy(_.name).map((colTuple: (String, Seq[ColInfo])) => {
+            println(colTuple)
+            val propsForThisCol = colTuple._2.map(c => (c.propName, c.propVal))
+            println(propsForThisCol)
+            println("-")
+            val col = colTuple._2.head
+            MssqlColumnInfo(col.name, col.colid, col.typeName, col.length, col.nullable, col.default, propsForThisCol)
+        }).toSeq.sortBy(_.id)
     }
 
-    private def queryTables(): Future[Seq[(String, String, Int, String, String)]] = {
-        val tablesQuery = for {
-            schema <- schemas.filterNot(_.name.inSet(Seq("dbo", "guest", "INFORMATION_SCHEMA", "sys"))).filterNot(_.name.startsWith("db_"))
-            tables <- sysobjects.filter(_.xtype === "U") if tables.uid === schema.schema_id
-            prop <- properties.filter(_.minor_id === 0).filter(_.theclass === 1) if tables.id === prop.major_id
-        } yield (schema.name, tables.name, tables.id, prop.name, prop.value.asColumnOf[String])
+    private def queryTables() = for {
+        schema <- schemas.filterNot(_.name.inSet(Seq("dbo", "guest", "INFORMATION_SCHEMA", "sys"))).filterNot(_.name.startsWith("db_"))
+        tables <- sysobjects.filter(_.xtype === "U") if tables.uid === schema.schema_id
+        prop <- properties.filter(_.minor_id === 0).filter(_.theclass === 1) if tables.id === prop.major_id
+    } yield (schema.name, tables.name, tables.id, prop.name, prop.value.asColumnOf[String])
 
-        db.run(tablesQuery.result)
-    }
+    val tablesQuery = Compiled(queryTables())
 
-    private def queryColumns(tableId: Int): Future[Seq[(Int, Int, String, String, Int, Boolean, String)]] = {
+    private def queryColumns(tableId: Int): Future[Seq[ColInfo]] = {
         logger.debug(s"Querying columns for table id $tableId")
         val columnsQuery = for {
             column <- sysColumns.filter(_.id === tableId)
             colType <- sysTypes.filterNot(_.name === "sysname") if colType.xtype === column.xtype
-        } yield (column.colid, column.id, column.name, colType.name, column.length, column.isnullable, column.default)
+            prop <- properties.filter(_.minor_id === column.colid).filter(_.theclass === 1).map(p => (p.minor_id, p.name, p.value.asColumnOf[String]))
+        } yield (column.colid, column.id, column.name, colType.name, column.length, column.isnullable, column.default, prop._2, prop._3)
 
-        db.run(columnsQuery.result)
+        db.run(columnsQuery.result).map(x => x.map(ColInfo.tupled))
     }
-
-    private def getPropertiesQuery(majorId: Rep[Int]) =
-        properties
-            .filter(_.major_id === majorId)
-            .filter(_.theclass === 1)
-            .map(col => (col.minor_id, col.name, col.value.asColumnOf[String]))
-
-    private val getPropertiesQueryCompiled = Compiled(getPropertiesQuery _)
 }
+
+case class TabInfo(schema: String, name: String, id: Int, propName: String, propVal: String)
+
+case class ColInfo(colid: Int, id: Int, name: String, typeName: String, length: Int, nullable: Boolean, default: String, propName: String, propVal: String)
