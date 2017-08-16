@@ -1,7 +1,8 @@
 package de.jannikarndt.sqlautodoc.MSSQL
 
 import com.typesafe.scalalogging.Logger
-import de.jannikarndt.sqlautodoc.{ColumnInfo, Options, TableInfo}
+import de.jannikarndt.sqlautodoc.configuration.Options
+import de.jannikarndt.sqlautodoc.model.{ColumnInfo, TableInfo}
 import slick.jdbc
 import slick.jdbc.SQLServerProfile
 import slick.jdbc.SQLServerProfile.api._

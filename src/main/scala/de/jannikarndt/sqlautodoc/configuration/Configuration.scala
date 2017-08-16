@@ -1,7 +1,8 @@
-package de.jannikarndt.sqlautodoc
+package de.jannikarndt.sqlautodoc.configuration
 
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.Logger
+import de.jannikarndt.sqlautodoc.exceptions.{DatabaseNotSupportedException, MissingArgumentException, WrongFormatException}
 
 object Configuration {
     val logger = Logger(this.getClass)
@@ -75,48 +76,4 @@ object Configuration {
         else
             throw MissingArgumentException(s"Argument $key is missing in args, sqlautodoc.conf and environment (as SQLAUTODOC_${key.toUpperCase}). Please specify either.")
     }
-}
-
-case class Connection(url: String, user: String, password: String)
-
-case class Options(connection: Connection, dbType: SupportedDBs.SupportedDB, outputFile: String, outputFolder: String, timeout: Int, format: OutputFormat.OutputFormat)
-
-case class MissingArgumentException(private val message: String = "",
-                                    private val cause: Throwable = None.orNull)
-    extends Exception(message, cause)
-
-case class DatabaseNotSupportedException(private val message: String = "",
-                                         private val cause: Throwable = None.orNull)
-    extends Exception(message, cause)
-
-case class WrongFormatException(private val message: String = "",
-                                private val cause: Throwable = None.orNull)
-    extends Exception(message, cause)
-
-object SupportedDBs {
-
-    sealed trait SupportedDB
-
-    case object MSSQL extends SupportedDB
-
-    case object Oracle extends SupportedDB
-
-    case object PostgreSQL extends SupportedDB
-
-    case object MySQL extends SupportedDB
-
-    val supportedDBs = Seq(MSSQL)
-}
-
-object OutputFormat {
-
-    sealed trait OutputFormat
-
-    case object OneFile extends OutputFormat
-
-    case object OneFilePerSchema extends OutputFormat
-
-    case object OneFilePerTable extends OutputFormat
-
-    val OutputFormat = Seq(OneFile, OneFilePerSchema, OneFilePerTable)
 }

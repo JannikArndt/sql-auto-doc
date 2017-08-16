@@ -1,4 +1,4 @@
-package de.jannikarndt.sqlautodoc
+package de.jannikarndt.sqlautodoc.markdown
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths, StandardOpenOption}

@@ -1,4 +1,7 @@
-package de.jannikarndt.sqlautodoc
+package de.jannikarndt.sqlautodoc.markdown
+
+import de.jannikarndt.sqlautodoc.configuration._
+import de.jannikarndt.sqlautodoc.model._
 
 object Markdown {
 
@@ -15,20 +18,20 @@ object Markdown {
         }
 
         options.format match {
-          case OutputFormat.OneFile =>
-              val markdown = tableInfos.map(ToMarkdown).mkString(System.lineSeparator())
-              File.Create(s"$folder${options.outputFile}", markdown)
-          case OutputFormat.OneFilePerSchema =>
-              tableInfos.map(_.schema).distinct.foreach { schema =>
-                  val markdown = tableInfos.filter(_.schema == schema).map(ToMarkdown).mkString(System.lineSeparator())
-                  File.Create(s"$folder/$schema.md", markdown)
-              }
-          case OutputFormat.OneFilePerTable =>
-              tableInfos.map(_.schema).distinct.foreach { schema =>
-                  tableInfos.filter(_.schema == schema).foreach{table =>
-                      File.Create(s"$folder/$schema/${table.name}.md", ToMarkdown(table))
-                  }
-              }
+            case OutputFormat.OneFile =>
+                val markdown = tableInfos.map(ToMarkdown).mkString(System.lineSeparator())
+                File.Create(s"$folder${options.outputFile}", markdown)
+            case OutputFormat.OneFilePerSchema =>
+                tableInfos.map(_.schema).distinct.foreach { schema =>
+                    val markdown = tableInfos.filter(_.schema == schema).map(ToMarkdown).mkString(System.lineSeparator())
+                    File.Create(s"$folder/$schema.md", markdown)
+                }
+            case OutputFormat.OneFilePerTable =>
+                tableInfos.map(_.schema).distinct.foreach { schema =>
+                    tableInfos.filter(_.schema == schema).foreach { table =>
+                        File.Create(s"$folder/$schema/${table.name}.md", ToMarkdown(table))
+                    }
+                }
         }
 
 

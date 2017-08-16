@@ -1,6 +1,8 @@
-package de.jannikarndt.sqlautodoc
+package de.jannikarndt.sqlautodoc.model
 
 import de.jannikarndt.sqlautodoc.MSSQL.SqlServerDoc
+import de.jannikarndt.sqlautodoc.configuration.{Options, SupportedDBs}
+import de.jannikarndt.sqlautodoc.exceptions.DatabaseNotSupportedException
 
 object TableInfo {
 
@@ -19,10 +21,3 @@ object TableInfo {
 }
 
 case class TableInfo(schema: String, name: String, id: Int, description: String, columns: Seq[ColumnInfo])
-
-case class ColumnInfo(name: String, id: Int, colType: String, length: Int, nullable: Boolean, default: String, Properties: Seq[(String, String)]) {
-    def example: String = Properties.filter(_._1 contains "Example").map(_._2).headOption.getOrElse("_")
-
-    def comment: String = Properties.filter(_._1 contains "MS_Description").map(_._2).headOption.getOrElse("_")
-}
-
