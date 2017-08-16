@@ -8,6 +8,8 @@ $ java -jar SqlAutoDoc.jar -url=jdbc:sqlserver://localhost:1401 -user=SA -passwo
 
 ![](screenshot.png)
 
+[![Build Status](https://travis-ci.org/JannikArndt/sql-auto-doc.svg?branch=master)](https://travis-ci.org/JannikArndt/sql-auto-doc)
+
 ### Usage
 Configuration can be given
 
